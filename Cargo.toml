@@ -1,0 +1,78 @@
+#   Cargo: Build System
+# =======================
+
+#  Package
+# =========
+# Describes the crate as an entity.
+[package]
+
+# Dependency Metadata
+# ===================
+authors = ["ARaspiK <araspik@protonmail.com>"]
+license = "MIT"
+#license-file = ""
+name = "buddies"
+version = "0.0.1"
+
+# crates.io Metadata
+# ==================
+description = "A buddy allocator"
+#documentation = ""
+#homepage = ""
+#keywords = []
+#categories = []
+publish = true
+#readme = "README.md"
+#repository = ""
+
+# Build Metadata
+# ==============
+#build = "build.rs"
+edition = '2018'
+#exclude = []
+#include = []
+#links = ""
+
+# Workspace
+# =========
+#workspace = ""
+#[workspace]
+#members = []
+#exclude = []
+
+#  Badges
+# ========
+[badges]
+#appveyor = { repository = "", branch = "", service = "" }
+#circle-cli = { repository = "", branch = "" }
+#gitlab = { repository = "", branch = "" }
+#azure-devops = { project = "", pipeline = "", build="" }
+#travis-ci = { repository = "", branch = "" }
+#codecov = { repository = "", branch = "", service = "" }
+#coveralls = { repository = "", branch = "", service = "" }
+#is-it-maintained-issue-resolution = { repository = "" }
+#is-it-maintained-open-issues = { repository = "" }
+maintenance = { status = "passively-maintained" }
+
+#  Dependencies
+# ==============
+[dependencies]
+[dependencies.bitvec]
+version = "^0.11"
+default-features = false
+
+[dev-dependencies]
+[build-dependencies]
+#[target.*.dependencies]
+
+#  Profiles
+# ==========
+[profile.dev]
+[profile.release]
+[profile.test]
+[profile.bench]
+
+#  Features
+# ==========
+[features]
+default = []
