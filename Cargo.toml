@@ -12,18 +12,18 @@ authors = ["ARaspiK <araspik@protonmail.com>"]
 license = "MIT"
 #license-file = ""
 name = "buddies"
-version = "0.0.1"
+version = "0.0.2"
 
 # crates.io Metadata
 # ==================
 description = "A buddy allocator"
-#documentation = ""
+documentation = "https://docs.rs/buddies"
 #homepage = ""
 #keywords = []
 #categories = []
 publish = true
-#readme = "README.md"
-#repository = ""
+readme = "README.md"
+repository = "https://github.com/araspik/buddies"
 
 # Build Metadata
 # ==============
