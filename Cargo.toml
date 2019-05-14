@@ -12,7 +12,7 @@ authors = ["ARaspiK <araspik@protonmail.com>"]
 license = "MIT"
 #license-file = ""
 name = "buddies"
-version = "0.0.2"
+version = "0.0.3"
 
 # crates.io Metadata
 # ==================

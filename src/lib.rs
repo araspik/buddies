@@ -44,34 +44,28 @@ impl<T> RawBuddies<T> {
     /// ### Panics
     /// Panics if the block size is too large (`>= buddies`).
     pub fn can_allocate(&self, n: usize) -> bool {
+        assert!(n < self.num);
         // Check if matching buddy contains free zones
         self.buddymap_ref(n).any()
     }
 
     /// Allocates a block of size `2^n` `T`s.
     ///
-    /// Note for safe shells: You want to convert the reference to a pointer so
-    /// that multiple allocations can exist simultaneously (or work around
-    /// using `Rc` somehow).
+    /// Note for safe shells: You want to convert the pointer to a slice such
+    /// that multiple (mutable) slices can be held simultaneously.
     ///
     /// Returns the reference as well as the block index (for freeing later).
     ///
     /// ### Panics
     /// Panics if the block size is too large (`>= buddies`).
-    pub fn allocate(&mut self, n: usize) -> Option<(&mut T, usize)> {
+    pub fn allocate(&mut self, n: usize) -> Option<(*mut T, usize)> {
+        assert!(n < self.num);
         // Find a free zone for the buddy (auto-exit on fail)
         let pos = self.buddymap_ref(n).iter().position(|s| s)?;
-        // Mark it, and all above, as mutable
-        for i in 0 .. (self.num - n) {
-            let map = self.buddymap_mut(n + i);
-            if map[pos >> i] {
-                break; // This one is set; all above will be set too
-            } else {
-                map.set(pos >> i, true);
-            }
-        }
+        // Mark the network
+        self.set_network(n, pos, true);
         // Return the block
-        Some((unsafe { &mut *self.data.add(pos << n) }, pos))
+        Some((unsafe { self.data.add(pos << n) }, pos))
     }
 
     /// Frees a given block by index and size.
@@ -84,17 +78,10 @@ impl<T> RawBuddies<T> {
         assert!(n < self.num);
         assert!(pos < (1usize << (self.num - n - 1)));
         assert!(self.buddymap_ref(n)[pos]);
-
+        // Drop the data
         unsafe { core::ptr::drop_in_place(self.data.add(pos << n)); }
-
-        for i in 0 .. (self.num - n) {
-            let map = self.buddymap_mut(n + i);
-            map.set(pos >> i, false);
-            // If the other one (in set for above) is non-empty, then stop
-            if map[(pos >> i) ^ 1usize] {
-                break;
-            }
-        }
+        // Free the network
+        self.set_network(n, pos, false);
     }
 
     /// Retrieves a bit slice for a certain buddy immutably.
@@ -123,5 +110,37 @@ impl<T> RawBuddies<T> {
             (1usize << self.num) - (1usize << (self.num - n))
          .. (1usize << self.num) - (1usize << (self.num - n - 1))
         ]
+    }
+
+    /// Sets a 'network' of bits around a single set.
+    ///
+    /// Primarily defined for [`allocate`] and [`free`].
+    fn set_network(&mut self, n: usize, i: usize, v: bool) {
+        assert!(n < self.num);
+        assert!(i < (1 << n));
+        // Begin by setting the lower network of bits
+        for b in 0..n {
+            self.buddymap_mut(b)[i << (n-b) .. (i+1) << (n-b)].set_all(v);
+        }
+        // Set the higher network of bits
+        // v == true: Keep setting until we hit another true
+        // v == false: Keep setting until the other is true
+        if v {
+            for b in n .. self.num {
+                let map = self.buddymap_mut(b);
+                if map[i >> (b-n)] {
+                    break;
+                }
+                map.set(i >> (b-n), true);
+            }
+        } else {
+            for b in n .. self.num {
+                let map = self.buddymap_mut(b);
+                map.set(i >> (b-n), false);
+                if map[(i >> (b-n)) ^ 1] {
+                    break;
+                }
+            }
+        }
     }
 }
